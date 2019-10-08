@@ -38,6 +38,7 @@ public class DAOTest {
 		int customerId = 36;
 		int expResult = 2;
 		int result = myDAO.numberOfOrdersForCustomer(customerId);
+                System.out.print(result);
 		assertEquals(expResult, result); // Le client 36 a 2 bons de commande
 	}
 
