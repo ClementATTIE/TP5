@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,21 +58,19 @@ public class DAO {
 	 * @throws DAOException
 	 */
 	public int deleteCustomer(int customerId) throws DAOException {
-                int result = 0;
-		// Une requête SQL paramétrée
+
 		String sql = "DELETE FROM CUSTOMER WHERE CUSTOMER_ID = ?";
 		try (Connection connection = myDataSource.getConnection();
 			PreparedStatement stmt = connection.prepareStatement(sql)) {
-			// Définir la valeur du paramètre
 			stmt.setInt(1, customerId);
 
-
+                        return stmt.executeUpdate();
+                        
 		} catch (SQLException ex) {
 			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
 			throw new DAOException(ex.getMessage());
 		}
                 
-               return result;
 	}
 
 	/**
@@ -110,22 +109,24 @@ public class DAO {
 	 * @param customerID la clé du CUSTOMER à rechercher
 	 * @return l'enregistrement correspondant dans la table CUSTOMER, ou null si pas trouvé
 	 * @throws DAOException
+     * @throws java.sql.SQLException
 	 */
-	public CustomerEntity findCustomer(int customerID) throws DAOException {
+	public CustomerEntity findCustomer(int customerID) throws DAOException, SQLException {
 		
-            CustomerEntity result;
-            String sql = "SELECT COUNT(*) FROM CUSTOMER WHERE CUSTOMER_ID= ?";	
-                
+            CustomerEntity result = null;
+            String sql = "SELECT * FROM CUSTOMER WHERE CUSTOMER_ID= ?";	
                 
                 try (Connection connection = myDataSource.getConnection();                
-			PreparedStatement stmt = connection.prepareStatement(sql)
-                        ) {
-			stmt.setInt(1, customerId);
+			PreparedStatement stmt = connection.prepareStatement(sql)) {
+			stmt.setInt(1, customerID);
                         
                         try(ResultSet rs = stmt.executeQuery()){
-                            rs.next();
-                            result = rs.getInt("NUMBER");
+                            if(rs.next()){
+                            String nom = rs.getString("NAME");
+                            String adresse = rs.getString("ADDRESSLINE1");
+                            result = new CustomerEntity(customerID, nom, adresse);
                         }
+                    }
 
 		} catch (SQLException ex) {
 			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
@@ -133,8 +134,8 @@ public class DAO {
 		}
                 return result;
             
-            
-	}
+            }
+        
 
 	/**
 	 * Liste des clients localisés dans un état des USA
@@ -143,8 +144,30 @@ public class DAO {
 	 * @return la liste des clients habitant dans cet état
 	 * @throws DAOException
 	 */
-	List<CustomerEntity> customersInState(String state) throws DAOException {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+	public List<CustomerEntity> customersInState(String state) throws DAOException {
+		List<CustomerEntity> result = new LinkedList<>();
+                String sql = "SELECT * FROM CUSTOMER WHERE STATE = ?";
+                try (Connection connection = myDataSource.getConnection();
+                    PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setString(1, state);
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            while (rs.next()) { 
+                                    int id = rs.getInt("CUSTOMER_ID");
+                                    String name = rs.getString("NAME");
+                                    String address = rs.getString("ADDRESSLINE1");
+				CustomerEntity c = new CustomerEntity(id, name, address);
+				result.add(c);
+				}
+			}
+                   }
+                   catch (SQLException ex) {
+			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+			throw new DAOException(ex.getMessage());
+		}
+
+                
+                
+                return result;
 	}
 
 }

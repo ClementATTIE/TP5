@@ -47,7 +47,7 @@ public class DAOTest {
 	 * @throws simplejdbc.DAOException
 	 */
 	@Test
-	public void testFindCustomer() throws DAOException {
+	public void testFindCustomer() throws DAOException, SQLException {
 		int customerID = 1;
 		CustomerEntity result = myDAO.findCustomer(customerID);
 		assertEquals("Jumbo Eagle Corp", result.getName());
@@ -78,7 +78,7 @@ public class DAOTest {
 	 * Test of deleteCustomer method, of class DAO.
 	 * @throws simplejdbc.DAOException
 	 */
-	@Test @Ignore // Ce test est désactivé, pourquoi ?
+	@Test // Ce test est désactivé, pourquoi ?
 	public void testDeleteCustomerWithoutOrder () throws DAOException {
 		int id = 25; // Le client 25 n'a pas de bon de commande
 		assertEquals(1, myDAO.deleteCustomer(id));
